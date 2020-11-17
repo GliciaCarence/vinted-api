@@ -1,6 +1,7 @@
 // Import du model User
 const User = require("../models/User");
 
+// Ce middleware permet de vérifier si l'user a le droit de modifier une annonce
 const isAuthenticated = async (req, res, next) => {
   try {
     // On vérifie si on a reçu un token
@@ -22,17 +23,17 @@ const isAuthenticated = async (req, res, next) => {
 
         // Si l'user n'xiste pas...
       } else {
-        return res.status(400).json({ message: "Unauthorized 1." });
+        return res.status(401).json({ message: "Unauthorized." });
       }
 
       // Si le token n'xiste pas...
     } else {
-      return res.status(400).json({ message: "Unauthorized 2." });
+      return res.status(401).json({ message: "Unauthorized." });
     }
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
 
-// Export de la fonction
+// Export du middleware
 module.exports = isAuthenticated;

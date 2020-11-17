@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const cloudinary = require("cloudinary").v2;
 const cors = require("cors");
 
+// Accès aux variables d'envirennement
 require("dotenv").config();
 
 const app = express();

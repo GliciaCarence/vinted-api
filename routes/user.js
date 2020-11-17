@@ -2,10 +2,10 @@
 const express = require("express");
 // Appel à la fonction Router(), issue du package express
 const router = express.Router();
-// import du package cloudinary
+// Import du package cloudinary - permet d'envoyer une image
 const cloudinary = require("cloudinary").v2;
 
-// Pour créer un compte utilisateur :
+// Créer un compte utilisateur :
 // Importer crypto.js
 const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
@@ -16,13 +16,12 @@ const uid2 = require("uid2");
 const User = require("../models/User");
 const Offer = require("../models/Offer");
 
-// Création des routes
-// 1. Route Signup
+// Route Signup - permet de créer un nouvel utilisateur
 router.post("/user/signup", async (req, res) => {
   try {
     // Vérifier que tous les champs requis sont remplis
     if (req.fields.username && req.fields.password && req.fields.email) {
-      // 1ère Étape : vérifier si le mail renseigné existe déjà
+      // Vérifier si le mail renseigné est déja pris
       const user = await User.findOne({ email: req.fields.email });
 
       // Si le mail renseigné existe...
@@ -31,35 +30,34 @@ router.post("/user/signup", async (req, res) => {
 
         // Si le mail renseigné n'existe pas...
       } else {
-        // 2ème Étape : encryptage du mot de passe user
+        // Encryptage du mot de passe user
         const password = req.fields.password;
         const salt = uid2(16);
         const hash = SHA256(password + salt).toString(encBase64);
         const token = uid2(16);
 
-        const avatar = req.files.avatar.path;
+        const userAvatar = req.files.avatar.path;
 
-        // 3ème Étape : création d'un nouveau user
+        // Création d'un nouveau user
         const newUser = new User({
           email: req.fields.email,
           account: {
             username: req.fields.username,
             phone: req.fields.phone,
-            avatar: avatar,
           },
           token: token,
           hash: hash,
           salt: salt,
         });
 
-        // 4ème Étape : envoyer l'image à cloudinary
-        const result = await cloudinary.uploader.upload(avatar, {
+        // Envoyer l'image à cloudinary
+        const result = await cloudinary.uploader.upload(userAvatar, {
           folder: `/vinted-api/user/${newUser._id}`,
         });
 
         newUser.avatar = result;
 
-        // 5ème Étape : sauvegarder le nouveau user dans la BDD
+        // Sauvegarder le nouveau user dans la BDD
         await newUser.save();
         // Répondre au client...
         res.status(200).json({
@@ -71,6 +69,7 @@ router.post("/user/signup", async (req, res) => {
           },
         });
       }
+
       // Si les champs requis ne sont pas tous renseignés
     } else {
       res.status(400).json({ message: "Required field." });
@@ -80,13 +79,13 @@ router.post("/user/signup", async (req, res) => {
   }
 });
 
-// 2. Route Login
+// Route Login - permet à l'utilisateur de se connecter à son compte
 router.post("/user/login", async (req, res) => {
   try {
     // Destructuring (extraction des clés d'un objet)
     const { email, password } = req.fields;
 
-    // 1ère Étape : est-ce que l'utilisateur possède un compte ?
+    // Est-ce que l'utilisateur possède un compte ?
     const user = await User.findOne({ email: email });
     // Si oui...
     if (user) {
@@ -106,11 +105,11 @@ router.post("/user/login", async (req, res) => {
         });
         // Si le mot de passe n'est pas correct...
       } else {
-        res.status(400).json({ message: "Acces not allowed." });
+        res.status(401).json({ message: "Unauthorized." });
       }
       // Si l'user n'existe pas...
     } else {
-      res.status(400).json({ message: "Acces not allowed." });
+      res.status(401).json({ message: "Unauthorized." });
     }
   } catch (error) {
     res.status(400).json({ message: error.message });
