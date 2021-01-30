@@ -35,11 +35,11 @@ router.post("/offer/publish", isAuthenticated, async (req, res) => {
       product_description: description,
       product_price: price,
       product_details: [
-        { BRAND: brand },
-        { SIZE: size },
-        { CONDITION: condition },
-        { COLOR: color },
-        { CITY: city },
+        { MARQUE: brand },
+        { TAILLE: size },
+        { ÉTAT: condition },
+        { COULEUR: color },
+        { VILLE: city },
       ],
       // La référence du user
       owner: req.user,
@@ -57,6 +57,16 @@ router.post("/offer/publish", isAuthenticated, async (req, res) => {
     res.status(200).json(newOffer);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/allOffers", async (req, res) => {
+  try {
+      const offers = await Offer.find().populate({path: "owner", select: "account",});
+
+      res.status(200).json({offers});
+  } catch (error) {
+      res.status(400).json({ message: error.message });
   }
 });
 
@@ -141,7 +151,7 @@ router.get("/offers", async (req, res) => {
 
 // Chercher une offre par id
 // Permettra de récupérer les détails concernant une annonce, en fonction de son id
-router.get("/offers/:id", async (req, res) => {
+router.get("/offer/:id", async (req, res) => {
   try {
     const offer = await Offer.findById(req.params.id).populate({
       path: "owner",

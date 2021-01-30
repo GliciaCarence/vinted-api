@@ -55,7 +55,9 @@ router.post("/user/signup", async (req, res) => {
           folder: `/vinted-api/user/${newUser._id}`,
         });
 
-        newUser.avatar = result;
+        /* console.log(result); */
+
+        newUser.account.avatar = result;
 
         // Sauvegarder le nouveau user dans la BDD
         await newUser.save();
@@ -66,6 +68,7 @@ router.post("/user/signup", async (req, res) => {
           account: {
             username: newUser.account.username,
             phone: newUser.account.phone,
+            avatar: result
           },
         });
       }
